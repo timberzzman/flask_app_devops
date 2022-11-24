@@ -1,9 +1,29 @@
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            yaml """
+            apiVersion: v1
+            kind: Pod
+            metadata:
+                labels:
+                    component: ci
+            spec:
+                containers:
+                    - name: python
+                      image: python:3.7
+                      command:
+                        - cat
+                      tty: true
+            """
+        }
+    }
     stages {
-        stage("Hello") {
+        stage('Test python') {
             steps {
-                echo 'Hello World'
+                container('python') {
+                    sh "pip install -r requirements.txt"
+                    sh "python test.py"
+                }
             }
         }
     }
